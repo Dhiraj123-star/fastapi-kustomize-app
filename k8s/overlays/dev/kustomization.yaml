@@ -5,7 +5,9 @@ resources:
   - ../../base
 
 patches:
-  - path: patch-deployment.yaml
-    target:
+  - target:
       kind: Deployment
-      name: fastapi
+      name: fastapi-app
+    path: patch-deployment.yaml
+
+
