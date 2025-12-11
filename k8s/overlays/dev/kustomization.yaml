@@ -10,4 +10,9 @@ patches:
       name: fastapi-app
     path: patch-deployment.yaml
 
+  # Add the new patch to enable TLS/SSL
+  - target:
+      kind: Ingress 
+      name: fastapi-ingress
+    path: patch-ingress-tls.yaml
 
