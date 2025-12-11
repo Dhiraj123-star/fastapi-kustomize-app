@@ -1,0 +1,21 @@
+# openssl.cnf
+[ req ]
+default_bits = 2048
+prompt = no
+default_md = sha256
+req_extensions = req_ext
+distinguished_name = dn
+
+[ dn ]
+C = US
+ST = California
+L = San Francisco
+O = FastAPI Local Dev
+OU = Dev
+CN = fastapi.dev.local # <-- Required for older systems, but not enough
+
+[ req_ext ]
+subjectAltName = @alt_names
+
+[ alt_names ]
+DNS.1 = fastapi.dev.local # <-- This is the CRITICAL line (SAN entry)
