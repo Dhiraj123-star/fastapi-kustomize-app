@@ -1,0 +1,16 @@
+# Docker build context files
+.dockerignore
+.env
+.DS_Store
+
+# Python cache and dependencies
+__pycache__/
+*.pyc
+venv/
+.venv/
+.pytest_cache/
+
+# Kubernetes Secrets (CRITICAL: Do not commit keys/certs)
+# These files are used only to create the K8s Secret.
+tls.key
+tls.crt
