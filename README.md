@@ -1,3 +1,4 @@
+
 ## 🚀 FastAPI + Docker + Kustomize Starter
 
 A **minimal, production-ready FastAPI starter** containerized with Docker, built and published via **GitHub Actions**, and deployed on Kubernetes using **Kustomize**.
