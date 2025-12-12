@@ -18,22 +18,6 @@ Designed to work smoothly with **Minikube** and scale later.
   * **🔒 Self-signed TLS/SSL enabled for local HTTPS access**
   * **🔑 SAN-compliant certificate generation for modern NGINX Ingress Controllers**
 
------
-
-## 📦 Architecture Overview
-
-```mermaid
-graph TD
-    A[GitHub Push to Main] -->|Triggers| B(GitHub Actions);
-    B --> C(Build & Push Docker Image);
-    C --> D[Docker Hub];
-    D --> E[Kubernetes Cluster (Minikube)];
-    E --> F[Ingress Controller (NGINX)];
-    F --> G[FastAPI Pods]
-```
-
------
-
 ## 📂 Project Structure
 
 ```
