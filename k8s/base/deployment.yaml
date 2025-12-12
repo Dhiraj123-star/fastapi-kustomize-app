@@ -26,3 +26,16 @@ spec:
             limits:
               cpu: 500m
               memory: 512Mi
+          # New: LIVENESS AND READINESS PROBES
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
