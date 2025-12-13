@@ -17,6 +17,7 @@ Designed to work smoothly with **Minikube** and scale later.
   * **🔒 Self-signed TLS/SSL enabled for local HTTPS access**
   * **🔑 SAN-compliant certificate generation for modern NGINX Ingress Controllers**
   * **🩺 Health Check Endpoint (`/healthz`) and Probes for Production Readiness**
+  * **⚙️ External Configuration Management via Kubernetes ConfigMaps**
 
 -----
 
@@ -24,12 +25,13 @@ Designed to work smoothly with **Minikube** and scale later.
 
 ```
 app/
-  └── main.py
+  └── main.py                   # Reads ConfigMap variable
 k8s/
   ├── base/
-  │   ├── deployment.yaml   # Updated with Liveness/Readiness Probes
+  │   ├── deployment.yaml       # Mounts ConfigMap as env vars
   │   ├── service.yaml
   │   ├── ingress.yaml
+  │   ├── configmap.yaml        # NEW: Defines configuration data
   │   └── kustomization.yaml
   └── overlays/
       └── dev/
@@ -97,7 +99,7 @@ To enable HTTPS, you must generate a SAN-compliant certificate and patch the NGI
 
 ### 2️⃣ Deploy using Kustomize
 
-Apply the configuration, which includes the Ingress resource and the TLS patch for the dev overlay, along with the updated Deployment containing the **Health Probes**.
+Apply the configuration, which now includes the **ConfigMap**, Ingress, and the updated Deployment containing the Health Probes.
 
 ```bash
 kubectl apply -k k8s/overlays/dev
@@ -126,7 +128,13 @@ kubectl patch service ingress-nginx-controller -n ingress-nginx -p '{"spec": {"t
     # Example: 192.168.58.2    fastapi.dev.local
     ```
 
-3.  **Test HTTPS Access:** Use `curl -k` (for insecure/self-signed cert) or visit the URL in your browser after accepting the security warning.
+3.  **Force Image Refresh:** Since the image uses the `:latest` tag, force a deployment restart after pushing new code to pull the latest image layer.
+
+    ```bash
+    kubectl rollout restart deployment fastapi-app
+    ```
+
+4.  **Final Test:**
 
     ```bash
     curl -k https://fastapi.dev.local
@@ -137,21 +145,14 @@ kubectl patch service ingress-nginx-controller -n ingress-nginx -p '{"spec": {"t
 
 -----
 
-### 🩺 Verify Health Check Probes
+### 🩺 Verification Endpoints
 
-You can manually verify the new health check endpoints are active and configured correctly.
+You can verify the new configuration endpoints:
 
-1.  **Check Pod Readiness:** Wait for the Pod to report `1/1` READY.
-    ```bash
-    kubectl get pods
-    ```
-2.  **Inspect Probes:** Check the Pod description to confirm the probes are configured.
-    ```bash
-    kubectl describe pod <YOUR_FASTAPI_POD_NAME>
-    ```
-3.  **Direct Access Test (Optional):** Access the new endpoint directly via the Service.
-    ```bash
-    kubectl exec -it <YOUR_FASTAPI_POD_NAME> -- curl -k http://localhost:8000/healthz
-    ```
+| Endpoint | Purpose |
+| :--- | :--- |
+| `/` | Returns the welcome message read from the **ConfigMap**. |
+| `/config-message` | Explicitly returns the value of the `WELCOME_MESSAGE` variable. |
+| `/healthz` | Returns `{"status": "Ok"}` for Liveness/Readiness Probes. |
 
 -----
