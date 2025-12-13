@@ -10,7 +10,7 @@ def read_root():
     return {"message":"Hello from FastAPI + Docker + Kustomize + Github Actions!!"}
 
 @app.get("/config-message")
-def read_root():
+def get_config_message():
     return {"message":WELCOME_MESSAGE}
 
 @app.get("/healthz")
