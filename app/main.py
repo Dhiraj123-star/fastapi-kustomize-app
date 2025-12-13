@@ -1,4 +1,7 @@
 from fastapi import FastAPI
+import os
+
+WELCOME_MESSAGE = os.getenv("WELCOME MESSAGE","ConfigMap variable not set. Fallback!!")
 
 app = FastAPI()
 

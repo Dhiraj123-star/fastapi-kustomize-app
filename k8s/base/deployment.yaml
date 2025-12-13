@@ -17,6 +17,9 @@ spec:
       containers:
         - name: fastapi-app
           image: dhiraj918106/fastapi-kustomize:latest
+          envFrom:
+            - configMapRef:
+                name: fastapi-config
           ports:
             - containerPort: 8000
           resources:

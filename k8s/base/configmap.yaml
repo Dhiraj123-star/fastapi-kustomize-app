@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fastapi-config
+
+data:
+  # Define the variable that will be injected into the container
+  WELCOME_MESSAGE: "ConfigMap Injected!! This is default welcome message."
+  
