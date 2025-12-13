@@ -1,4 +1,3 @@
-
 ## 🚀 FastAPI + Docker + Kustomize Starter
 
 A **minimal, production-ready FastAPI starter** containerized with Docker, built and published via **GitHub Actions**, and deployed on Kubernetes using **Kustomize**.
@@ -17,6 +16,9 @@ Designed to work smoothly with **Minikube** and scale later.
   * **✨ Ingress-based external routing (`fastapi.dev.local`)**
   * **🔒 Self-signed TLS/SSL enabled for local HTTPS access**
   * **🔑 SAN-compliant certificate generation for modern NGINX Ingress Controllers**
+  * **🩺 Health Check Endpoint (`/healthz`) and Probes for Production Readiness**
+
+-----
 
 ## 📂 Project Structure
 
@@ -25,22 +27,22 @@ app/
   └── main.py
 k8s/
   ├── base/
-  │   ├── deployment.yaml
+  │   ├── deployment.yaml   # Updated with Liveness/Readiness Probes
   │   ├── service.yaml
-  │   ├── ingress.yaml        # Added Ingress resource
+  │   ├── ingress.yaml
   │   └── kustomization.yaml
   └── overlays/
       └── dev/
           ├── kustomization.yaml
           ├── patch-deployment.yaml
-          └── patch-ingress-tls.yaml  # Added TLS patch
+          └── patch-ingress-tls.yaml
 .github/
   └── workflows/
       └── docker-publish.yml
 Dockerfile
 requirements.txt
 README.md
-openssl.cnf                     # Added for SAN certificate generation
+openssl.cnf
 tls.key (Ignored by Git)
 tls.crt (Ignored by Git)
 ```
@@ -95,7 +97,7 @@ To enable HTTPS, you must generate a SAN-compliant certificate and patch the NGI
 
 ### 2️⃣ Deploy using Kustomize
 
-Apply the configuration, which includes the Ingress resource and the TLS patch for the dev overlay.
+Apply the configuration, which includes the Ingress resource and the TLS patch for the dev overlay, along with the updated Deployment containing the **Health Probes**.
 
 ```bash
 kubectl apply -k k8s/overlays/dev
@@ -132,5 +134,24 @@ kubectl patch service ingress-nginx-controller -n ingress-nginx -p '{"spec": {"t
 
     Visit:
     👉 [https://fastapi.dev.local](https://www.google.com/search?q=https://fastapi.dev.local)
+
+-----
+
+### 🩺 Verify Health Check Probes
+
+You can manually verify the new health check endpoints are active and configured correctly.
+
+1.  **Check Pod Readiness:** Wait for the Pod to report `1/1` READY.
+    ```bash
+    kubectl get pods
+    ```
+2.  **Inspect Probes:** Check the Pod description to confirm the probes are configured.
+    ```bash
+    kubectl describe pod <YOUR_FASTAPI_POD_NAME>
+    ```
+3.  **Direct Access Test (Optional):** Access the new endpoint directly via the Service.
+    ```bash
+    kubectl exec -it <YOUR_FASTAPI_POD_NAME> -- curl -k http://localhost:8000/healthz
+    ```
 
 -----
