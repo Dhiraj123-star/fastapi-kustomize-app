@@ -20,6 +20,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: fastapi-config
+            - secretRef:
+                name: fastapi-secrets
           ports:
             - containerPort: 8000
           resources:

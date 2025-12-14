@@ -1,9 +1,18 @@
 from fastapi import FastAPI
 import os
+from .database import initialize_db, check_db_connection
 
 WELCOME_MESSAGE = os.getenv("WELCOME_MESSAGE","ConfigMap variable not set. Fallback!!")
+DB_PATH = os.getenv("SQLITE_DATABASE_PATH", "DB path not set. Fallback!!") 
 
 app = FastAPI()
+
+@app.on_event("startup")
+def startup_event():
+    success=initialize_db()
+    if not success:
+        print("Database failed to initialize. Proceeding with limited functionality.")
+
 
 @app.get("/")
 def read_root():
@@ -16,7 +25,14 @@ def get_config_message():
 @app.get("/healthz")
 def health_check():
     """
-    Kubernetes Readiness and Liveness Probe endpoint.
-    Returns 200 OK if the application is running.
+    Check application and database health
     """
-    return {"status":"Ok"}
+    db_ok,db_message= check_db_connection()
+
+    if db_ok:
+        return {"status":"Ok", "db_status":db_message}
+
+    else:
+        return {"status":"Degraded","db_status":db_message},503
+
+    
