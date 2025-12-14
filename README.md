@@ -1,3 +1,4 @@
+
 ## 🚀 FastAPI + Docker + Kustomize Starter
 
 A **minimal, production-ready FastAPI starter** containerized with Docker, built and published via **GitHub Actions**, and deployed on Kubernetes using **Kustomize**.
@@ -18,6 +19,8 @@ Designed to work smoothly with **Minikube** and scale later.
   * **🔑 SAN-compliant certificate generation for modern NGINX Ingress Controllers**
   * **🩺 Health Check Endpoint (`/healthz`) and Probes for Production Readiness**
   * **⚙️ External Configuration Management via Kubernetes ConfigMaps**
+  * **🔐 Kubernetes Secrets Integration** - Securely stores the SQLite database path, demonstrating best practices for sensitive data.
+  * **💾 Simple SQLite Database** - Includes a database connection and health check in the application.
 
 -----
 
@@ -25,13 +28,15 @@ Designed to work smoothly with **Minikube** and scale later.
 
 ```
 app/
-  └── main.py                   # Reads ConfigMap variable
+  ├── main.py                   # Reads ConfigMap & Secret variables
+  └── database.py               # NEW: SQLite connection and initialization logic
 k8s/
   ├── base/
-  │   ├── deployment.yaml       # Mounts ConfigMap as env vars
+  │   ├── deployment.yaml       # Mounts ConfigMap & Secret as env vars
   │   ├── service.yaml
   │   ├── ingress.yaml
-  │   ├── configmap.yaml        # NEW: Defines configuration data
+  │   ├── configmap.yaml        # Defines non-sensitive configuration
+  │   ├── secret.yaml           # NEW: Defines sensitive configuration (DB Path)
   │   └── kustomization.yaml
   └── overlays/
       └── dev/
@@ -41,7 +46,7 @@ k8s/
 .github/
   └── workflows/
       └── docker-publish.yml
-Dockerfile
+Dockerfile                      # Updated with RUN mkdir for SQLite write permissions
 requirements.txt
 README.md
 openssl.cnf
@@ -65,7 +70,7 @@ Visit:
 
 ## 🐳 Docker Image (CI/CD Managed)
 
-Docker image is **automatically built and pushed** to Docker Hub on every push to `main`.
+Docker image is **automatically built and pushed** to Docker Hub on every push to `main`. The `Dockerfile` now includes steps to prepare the directory needed for the SQLite database.
 
 ```
 dhiraj918106/fastapi-kustomize:latest
@@ -90,16 +95,16 @@ To enable HTTPS, you must generate a SAN-compliant certificate and patch the NGI
     ```bash
     openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -config openssl.cnf
     ```
-3.  **Create Kubernetes Secret:**
+3.  **Create Kubernetes Secret (TLS):**
     ```bash
     kubectl create secret tls fastapi-tls-secret --key tls.key --cert tls.crt
     ```
 
 -----
 
-### 2️⃣ Deploy using Kustomize
+### 2️⃣ Deploy using Kustomize and Secrets
 
-Apply the configuration, which now includes the **ConfigMap**, Ingress, and the updated Deployment containing the Health Probes.
+Apply the configuration. This step creates the **ConfigMap** and the **Secret** resources and updates the Deployment to mount both sets of variables.
 
 ```bash
 kubectl apply -k k8s/overlays/dev
@@ -147,12 +152,12 @@ kubectl patch service ingress-nginx-controller -n ingress-nginx -p '{"spec": {"t
 
 ### 🩺 Verification Endpoints
 
-You can verify the new configuration endpoints:
+You can verify the new configuration and database health:
 
-| Endpoint | Purpose |
-| :--- | :--- |
-| `/` | Returns the welcome message read from the **ConfigMap**. |
-| `/config-message` | Explicitly returns the value of the `WELCOME_MESSAGE` variable. |
-| `/healthz` | Returns `{"status": "Ok"}` for Liveness/Readiness Probes. |
+| Endpoint | Purpose | Output Example |
+| :--- | :--- | :--- |
+| `/` | Returns the welcome message read from the ConfigMap. | `{"message": "ConfigMap Injected!"}` |
+| `/config-message` | Explicitly returns both the ConfigMap value and the Secret-injected DB Path. | `{"message": "Config: ..., DB Path: /app/data/app.db"}` |
+| `/healthz` | **Critical:** Checks application status and pings the SQLite database. | `{"status": "Ok", "db_status": "DB initialized successfully"}` |
 
 -----
