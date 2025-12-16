@@ -1,4 +1,3 @@
-
 ## 🚀 FastAPI + Docker + Kustomize Starter
 
 A **minimal, production-ready FastAPI starter** containerized with Docker, built and published via **GitHub Actions**, and deployed on Kubernetes using **Kustomize**.
@@ -21,6 +20,7 @@ Designed to work smoothly with **Minikube** and scale later.
   * **⚙️ External Configuration Management via Kubernetes ConfigMaps**
   * **🔐 Kubernetes Secrets Integration** - Securely stores the SQLite database path, demonstrating best practices for sensitive data.
   * **💾 Simple SQLite Database** - Includes a database connection and health check in the application.
+  * **🧪 Build-Time Testing with Pytest** - Runs unit and integration tests (e.g., checking API endpoints) directly during the Docker image build, guaranteeing only functional images are pushed.
 
 -----
 
@@ -29,14 +29,16 @@ Designed to work smoothly with **Minikube** and scale later.
 ```
 app/
   ├── main.py                   # Reads ConfigMap & Secret variables
-  └── database.py               # NEW: SQLite connection and initialization logic
+  ├── database.py               # SQLite connection and initialization logic
+  └── tests/                    # NEW: Directory for Pytest test files
+      └── test_main.py          # NEW: Tests for API endpoints
 k8s/
   ├── base/
   │   ├── deployment.yaml       # Mounts ConfigMap & Secret as env vars
   │   ├── service.yaml
   │   ├── ingress.yaml
   │   ├── configmap.yaml        # Defines non-sensitive configuration
-  │   ├── secret.yaml           # NEW: Defines sensitive configuration (DB Path)
+  │   ├── secret.yaml           # Defines sensitive configuration (DB Path)
   │   └── kustomization.yaml
   └── overlays/
       └── dev/
@@ -46,8 +48,8 @@ k8s/
 .github/
   └── workflows/
       └── docker-publish.yml
-Dockerfile                      # Updated with RUN mkdir for SQLite write permissions
-requirements.txt
+Dockerfile                      # Updated to RUN pytest and create SQLite dir
+requirements.txt                # Updated to include pytest and httpx
 README.md
 openssl.cnf
 tls.key (Ignored by Git)
@@ -70,7 +72,7 @@ Visit:
 
 ## 🐳 Docker Image (CI/CD Managed)
 
-Docker image is **automatically built and pushed** to Docker Hub on every push to `main`. The `Dockerfile` now includes steps to prepare the directory needed for the SQLite database.
+Docker image is **automatically built and pushed** to Docker Hub on every push to `main`. The `Dockerfile` now runs `pytest` during the build process to validate the application before finalizing the image.
 
 ```
 dhiraj918106/fastapi-kustomize:latest
@@ -149,3 +151,4 @@ kubectl patch service ingress-nginx-controller -n ingress-nginx -p '{"spec": {"t
     👉 [https://fastapi.dev.local](https://www.google.com/search?q=https://fastapi.dev.local)
 
 -----
+
