@@ -149,15 +149,3 @@ kubectl patch service ingress-nginx-controller -n ingress-nginx -p '{"spec": {"t
     👉 [https://fastapi.dev.local](https://www.google.com/search?q=https://fastapi.dev.local)
 
 -----
-
-### 🩺 Verification Endpoints
-
-You can verify the new configuration and database health:
-
-| Endpoint | Purpose | Output Example |
-| :--- | :--- | :--- |
-| `/` | Returns the welcome message read from the ConfigMap. | `{"message": "ConfigMap Injected!"}` |
-| `/config-message` | Explicitly returns both the ConfigMap value and the Secret-injected DB Path. | `{"message": "Config: ..., DB Path: /app/data/app.db"}` |
-| `/healthz` | **Critical:** Checks application status and pings the SQLite database. | `{"status": "Ok", "db_status": "DB initialized successfully"}` |
-
------
