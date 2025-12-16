@@ -37,9 +37,15 @@ def initialize_db():
         return False
 
 def check_db_connection():
-    """Checks if a connection can be established and a simple query runs."""
+    """
+    Checks if a connection can be established and a simple query runs.
+    
+    IMPORTANT: This function is now guaranteed to return a tuple (bool, str) 
+    to prevent TypeError when the DB_FILE is missing during the Docker build test.
+    """
     if not DB_FILE:
-        return False
+        # FIX: Return a 2-item tuple when the secret is missing (e.g., during 'RUN pytest' in Dockerfile)
+        return False, "DB path missing (Secrets not available during build)"
         
     try:
         conn = sqlite3.connect(DB_FILE)
